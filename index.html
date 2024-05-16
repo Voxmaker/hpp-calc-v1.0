@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HPP Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HPP Calculator</h1>
+        </header>
+        <main>
+            <section>
+                <label for="productName">Nama Produk:</label>
+                <input type="text" id="productName" placeholder="Masukkan nama produk">
+            </section>
+            <section class="materials">
+                <h2>Tambahkan Bahan Baku</h2>
+                <div class="input-group">
+                    <input type="text" id="materialName" placeholder="Nama Bahan">
+                    <input type="number" id="materialCost" placeholder="Biaya">
+                    <input type="number" id="materialQuantity" placeholder="Jumlah">
+                    <select id="materialUnit">
+                        <option value="ml">ml</option>
+                        <option value="gram">gram</option>
+                        <option value="pieces">pieces</option>
+                    </select>
+                    <button onclick="addMaterial()">Tambahkan</button>
+                </div>
+                <ul id="materialsList"></ul>
+            </section>
+            <section class="recipe">
+                <h2>Masukkan Resep</h2>
+                <div class="input-group">
+                    <select id="recipeMaterial">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                    <input type="number" id="recipeQuantity" placeholder="Jumlah">
+                    <button onclick="addRecipe()">Tambahkan</button>
+                </div>
+                <ul id="recipeList"></ul>
+            </section>
+            <button onclick="calculateHPP()">Hitung HPP</button>
+            <section id="result">
+                <h2>Hasil Perhitungan</h2>
+                <p id="hppResult"></p>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
