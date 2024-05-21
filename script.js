@@ -111,4 +111,10 @@ document.addEventListener('DOMContentLoaded', () => {
             wsData.push([ingredient, quantity, ingredients[ingredient].unit]);
         });
 
-        let totalHpp = 0
+        let totalHpp = 0;
+        recipeList.querySelectorAll('li').forEach(item => {
+            const ingredient = item.dataset.ingredient;
+            const quantity = parseFloat(item.dataset.quantity);
+            const ingredientData = ingredients[ingredient];
+
+            const costPerUnit = ingredientData.cost /
