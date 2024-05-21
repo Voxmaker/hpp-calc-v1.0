@@ -3,51 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HPP Calculator</title>
+    <title>Perhitungan HPP</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>HPP Calculator</h1>
-        </header>
-        <main>
-            <section>
-                <label for="productName">Nama Produk:</label>
-                <input type="text" id="productName" placeholder="Masukkan nama produk">
-            </section>
-            <section class="materials">
-                <h2>Tambahkan Bahan Baku</h2>
-                <div class="input-group">
-                    <input type="text" id="materialName" placeholder="Nama Bahan">
-                    <input type="number" id="materialCost" placeholder="Biaya">
-                    <input type="number" id="materialQuantity" placeholder="Jumlah">
-                    <select id="materialUnit">
-                        <option value="ml">ml</option>
-                        <option value="gram">gram</option>
-                        <option value="pieces">pieces</option>
-                    </select>
-                    <button onclick="addMaterial()">Tambahkan</button>
-                </div>
-                <ul id="materialsList"></ul>
-            </section>
-            <section class="recipe">
-                <h2>Masukkan Resep</h2>
-                <div class="input-group">
-                    <select id="recipeMaterial">
-                        <!-- Options will be populated dynamically -->
-                    </select>
-                    <input type="number" id="recipeQuantity" placeholder="Jumlah">
-                    <button onclick="addRecipe()">Tambahkan</button>
-                </div>
-                <ul id="recipeList"></ul>
-            </section>
-            <button onclick="calculateHPP()">Hitung HPP</button>
-            <section id="result">
-                <h2>Hasil Perhitungan</h2>
-                <p id="hppResult"></p>
-            </section>
-        </main>
+        <h1>Perhitungan HPP</h1>
+        <div class="product-input">
+            <label for="product-name">Nama Produk:</label>
+            <input type="text" id="product-name" placeholder="Masukkan Nama Produk">
+        </div>
+        <div class="ingredients-section">
+            <h2>Bahan Baku</h2>
+            <div class="ingredient-input">
+                <input type="text" id="ingredient-name" placeholder="Nama Bahan">
+                <input type="number" id="ingredient-cost" placeholder="Biaya">
+                <input type="number" id="ingredient-quantity" placeholder="Jumlah">
+                <select id="ingredient-unit">
+                    <option value="ml">ml</option>
+                    <option value="gram">gram</option>
+                    <option value="pieces">pieces</option>
+                </select>
+                <button id="add-ingredient">Tambah Bahan</button>
+            </div>
+            <ul id="ingredient-list"></ul>
+        </div>
+        <div class="recipe-section">
+            <h2>Resep</h2>
+            <div class="recipe-input">
+                <select id="recipe-ingredient">
+                    <!-- Dynamic options -->
+                </select>
+                <input type="number" id="recipe-quantity" placeholder="Jumlah">
+                <button id="add-recipe">Tambah ke Resep</button>
+            </div>
+            <ul id="recipe-list"></ul>
+        </div>
+        <button id="calculate-hpp">Hitung HPP</button>
+        <button id="export-excel">Ekspor ke Excel</button>
+        <div id="result"></div>
     </div>
     <script src="script.js"></script>
 </body>
