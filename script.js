@@ -18,12 +18,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const listItem = document.createElement('li');
             listItem.textContent = `${name}: ${cost} per ${quantity} ${unit}`;
             listItem.dataset.name = name;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Hapus';
+            deleteButton.addEventListener('click', () => {
+                delete ingredients[name];
+                listItem.remove();
+                updateRecipeIngredientSelect();
+            });
+
+            listItem.appendChild(deleteButton);
             ingredientList.appendChild(listItem);
 
-            const option = document.createElement('option');
-            option.value = name;
-            option.textContent = name;
-            recipeIngredientSelect.appendChild(option);
+            updateRecipeIngredientSelect();
 
             document.getElementById('ingredient-name').value = '';
             document.getElementById('ingredient-cost').value = '';
@@ -31,6 +38,16 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('ingredient-unit').value = 'ml';
         }
     });
+
+    function updateRecipeIngredientSelect() {
+        recipeIngredientSelect.innerHTML = '';
+        for (const name in ingredients) {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            recipeIngredientSelect.appendChild(option);
+        }
+    }
 
     document.getElementById('add-recipe').addEventListener('click', () => {
         const ingredient = recipeIngredientSelect.value;
@@ -41,6 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
             listItem.textContent = `${ingredient}: ${quantity} ${ingredients[ingredient].unit}`;
             listItem.dataset.ingredient = ingredient;
             listItem.dataset.quantity = quantity;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Hapus';
+            deleteButton.addEventListener('click', () => {
+                listItem.remove();
+            });
+
+            listItem.appendChild(deleteButton);
             recipeList.appendChild(listItem);
 
             document.getElementById('recipe-quantity').value = '';
@@ -76,35 +101,20 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const wb = XLSX.utils.book_new();
-        wb.Props = {
-            Title: "Perhitungan HPP",
-            Subject: "HPP",
-            Author: "Seribu Cangkir",
-            CreatedDate: new Date()
-        };
-
-        const ws_data = [
-            ["Nama Produk", productName],
-            ["", ""],
-            ["Bahan Baku", "Biaya per Satuan", "Jumlah Satuan"],
-        ];
-
-        for (const [name, data] of Object.entries(ingredients)) {
-            ws_data.push([name, data.cost, `${data.quantity} ${data.unit}`]);
-        }
-
-        ws_data.push(["", ""]);
-        ws_data.push(["Resep", "Jumlah"]);
-
+        const data = [];
         recipeList.querySelectorAll('li').forEach(item => {
             const ingredient = item.dataset.ingredient;
             const quantity = parseFloat(item.dataset.quantity);
-            ws_data.push([ingredient, `${quantity} ${ingredients[ingredient].unit}`]);
+            const unit = ingredients[ingredient].unit;
+            const ingredientData = ingredients[ingredient];
+            const costPerUnit = ingredientData.cost / ingredientData.quantity;
+            const cost = costPerUnit * quantity;
+            data.push({ ingredient, quantity, unit, cost });
         });
 
-        const ws = XLSX.utils.aoa_to_sheet(ws_data);
-        XLSX.utils.book_append_sheet(wb, ws, "HPP");
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'HPP');
 
         XLSX.writeFile(wb, `${productName}_HPP.xlsx`);
     });
