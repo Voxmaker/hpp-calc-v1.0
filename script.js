@@ -24,13 +24,20 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteButton.addEventListener('click', () => {
                 delete ingredients[name];
                 listItem.remove();
-                updateRecipeIngredientSelect();
+                Array.from(recipeIngredientSelect.options).forEach(option => {
+                    if (option.value === name) {
+                        option.remove();
+                    }
+                });
             });
 
             listItem.appendChild(deleteButton);
             ingredientList.appendChild(listItem);
 
-            updateRecipeIngredientSelect();
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            recipeIngredientSelect.appendChild(option);
 
             document.getElementById('ingredient-name').value = '';
             document.getElementById('ingredient-cost').value = '';
@@ -38,16 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('ingredient-unit').value = 'ml';
         }
     });
-
-    function updateRecipeIngredientSelect() {
-        recipeIngredientSelect.innerHTML = '';
-        for (const name in ingredients) {
-            const option = document.createElement('option');
-            option.value = name;
-            option.textContent = name;
-            recipeIngredientSelect.appendChild(option);
-        }
-    }
 
     document.getElementById('add-recipe').addEventListener('click', () => {
         const ingredient = recipeIngredientSelect.value;
@@ -101,21 +98,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const data = [];
+        const wb = XLSX.utils.book_new();
+        const wsData = [['Nama Produk', productName], [], ['Bahan', 'Biaya per Unit', 'Jumlah', 'Satuan'], []];
+        for (const name in ingredients) {
+            const ing = ingredients[name];
+            wsData.push([name, ing.cost, ing.quantity, ing.unit]);
+        }
+        wsData.push([], ['Resep', 'Jumlah', 'Satuan'], []);
         recipeList.querySelectorAll('li').forEach(item => {
             const ingredient = item.dataset.ingredient;
             const quantity = parseFloat(item.dataset.quantity);
-            const unit = ingredients[ingredient].unit;
-            const ingredientData = ingredients[ingredient];
-            const costPerUnit = ingredientData.cost / ingredientData.quantity;
-            const cost = costPerUnit * quantity;
-            data.push({ ingredient, quantity, unit, cost });
+            wsData.push([ingredient, quantity, ingredients[ingredient].unit]);
         });
 
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'HPP');
-
-        XLSX.writeFile(wb, `${productName}_HPP.xlsx`);
-    });
-});
+        let totalHpp = 0
