@@ -1,85 +1,111 @@
-let materials = [];
-let recipe = [];
+document.addEventListener('DOMContentLoaded', () => {
+    const ingredientList = document.getElementById('ingredient-list');
+    const recipeList = document.getElementById('recipe-list');
+    const recipeIngredientSelect = document.getElementById('recipe-ingredient');
+    const resultDiv = document.getElementById('result');
 
-function addMaterial() {
-    const name = document.getElementById('materialName').value;
-    const cost = parseFloat(document.getElementById('materialCost').value);
-    const quantity = parseFloat(document.getElementById('materialQuantity').value);
-    const unit = document.getElementById('materialUnit').value;
+    const ingredients = {};
 
-    if (name && !isNaN(cost) && !isNaN(quantity)) {
-        materials.push({ name, cost, quantity, unit });
-        updateMaterialsList();
-        updateRecipeMaterialOptions();
-    }
-}
+    document.getElementById('add-ingredient').addEventListener('click', () => {
+        const name = document.getElementById('ingredient-name').value;
+        const cost = parseFloat(document.getElementById('ingredient-cost').value);
+        const quantity = parseFloat(document.getElementById('ingredient-quantity').value);
+        const unit = document.getElementById('ingredient-unit').value;
 
-function updateMaterialsList() {
-    const materialsList = document.getElementById('materialsList');
-    materialsList.innerHTML = '';
-    materials.forEach((material, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${material.name}: ${material.cost} per ${material.quantity} ${material.unit}</span>
-                        <button onclick="removeMaterial(${index})">Hapus</button>`;
-        materialsList.appendChild(li);
-    });
-}
+        if (name && !isNaN(cost) && !isNaN(quantity)) {
+            ingredients[name] = { cost, quantity, unit };
 
-function removeMaterial(index) {
-    materials.splice(index, 1);
-    updateMaterialsList();
-    updateRecipeMaterialOptions();
-}
+            const listItem = document.createElement('li');
+            listItem.textContent = `${name}: ${cost} per ${quantity} ${unit}`;
+            listItem.dataset.name = name;
+            ingredientList.appendChild(listItem);
 
-function updateRecipeMaterialOptions() {
-    const recipeMaterial = document.getElementById('recipeMaterial');
-    recipeMaterial.innerHTML = '';
-    materials.forEach((material, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = material.name;
-        recipeMaterial.appendChild(option);
-    });
-}
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            recipeIngredientSelect.appendChild(option);
 
-function addRecipe() {
-    const materialIndex = document.getElementById('recipeMaterial').value;
-    const quantity = parseFloat(document.getElementById('recipeQuantity').value);
-
-    if (!isNaN(quantity)) {
-        recipe.push({ materialIndex, quantity });
-        updateRecipeList();
-    }
-}
-
-function updateRecipeList() {
-    const recipeList = document.getElementById('recipeList');
-    recipeList.innerHTML = '';
-    recipe.forEach((item, index) => {
-        const material = materials[item.materialIndex];
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${material.name}: ${item.quantity} ${material.unit}</span>
-                        <button onclick="removeRecipe(${index})">Hapus</button>`;
-        recipeList.appendChild(li);
-    });
-}
-
-function removeRecipe(index) {
-    recipe.splice(index, 1);
-    updateRecipeList();
-}
-
-function calculateHPP() {
-    let hpp = 0;
-    recipe.forEach(item => {
-        const material = materials[item.materialIndex];
-        hpp += (item.quantity / material.quantity) * material.cost;
+            document.getElementById('ingredient-name').value = '';
+            document.getElementById('ingredient-cost').value = '';
+            document.getElementById('ingredient-quantity').value = '';
+            document.getElementById('ingredient-unit').value = 'ml';
+        }
     });
 
-    const productName = document.getElementById('productName').value;
-    const resultSection = document.getElementById('result');
-    const hppResult = document.getElementById('hppResult');
+    document.getElementById('add-recipe').addEventListener('click', () => {
+        const ingredient = recipeIngredientSelect.value;
+        const quantity = parseFloat(document.getElementById('recipe-quantity').value);
 
-    hppResult.textContent = `${productName} HPP = Rp ${hpp.toFixed(2)}`;
-    resultSection.style.display = 'block';
-}
+        if (ingredient && !isNaN(quantity)) {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${ingredient}: ${quantity} ${ingredients[ingredient].unit}`;
+            listItem.dataset.ingredient = ingredient;
+            listItem.dataset.quantity = quantity;
+            recipeList.appendChild(listItem);
+
+            document.getElementById('recipe-quantity').value = '';
+        }
+    });
+
+    document.getElementById('calculate-hpp').addEventListener('click', () => {
+        const productName = document.getElementById('product-name').value;
+
+        if (!productName) {
+            alert('Masukkan nama produk terlebih dahulu.');
+            return;
+        }
+
+        let totalHpp = 0;
+
+        recipeList.querySelectorAll('li').forEach(item => {
+            const ingredient = item.dataset.ingredient;
+            const quantity = parseFloat(item.dataset.quantity);
+            const ingredientData = ingredients[ingredient];
+
+            const costPerUnit = ingredientData.cost / ingredientData.quantity;
+            totalHpp += costPerUnit * quantity;
+        });
+
+        resultDiv.innerHTML = `<h2>${productName}</h2><p>HPP = ${totalHpp.toFixed(2)}</p>`;
+    });
+
+    document.getElementById('export-excel').addEventListener('click', () => {
+        const productName = document.getElementById('product-name').value;
+        if (!productName) {
+            alert('Masukkan nama produk terlebih dahulu.');
+            return;
+        }
+
+        const wb = XLSX.utils.book_new();
+        wb.Props = {
+            Title: "Perhitungan HPP",
+            Subject: "HPP",
+            Author: "Seribu Cangkir",
+            CreatedDate: new Date()
+        };
+
+        const ws_data = [
+            ["Nama Produk", productName],
+            ["", ""],
+            ["Bahan Baku", "Biaya per Satuan", "Jumlah Satuan"],
+        ];
+
+        for (const [name, data] of Object.entries(ingredients)) {
+            ws_data.push([name, data.cost, `${data.quantity} ${data.unit}`]);
+        }
+
+        ws_data.push(["", ""]);
+        ws_data.push(["Resep", "Jumlah"]);
+
+        recipeList.querySelectorAll('li').forEach(item => {
+            const ingredient = item.dataset.ingredient;
+            const quantity = parseFloat(item.dataset.quantity);
+            ws_data.push([ingredient, `${quantity} ${ingredients[ingredient].unit}`]);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+        XLSX.utils.book_append_sheet(wb, ws, "HPP");
+
+        XLSX.writeFile(wb, `${productName}_HPP.xlsx`);
+    });
+});
